@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="plugin.video.mytv" name="TV" version="1.0" provider-name="Lionel Zerbib">
+  <requires>
+    <import addon="xbmc.python" version="2.24.0"/>
+  </requires>
+  <extension point="xbmc.service" library="service.py" start="[login|startup]"/>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>TV</summary>
+    <description>TV</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+<addon id="plugin.video.myvod" name="VOD By Date" version="1.0" provider-name="Lionel Zerbib">
+  <requires>
+    <import addon="xbmc.python" version="2.24.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>VOD By Date</summary>
+    <description>VOD By Date</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+</addons>

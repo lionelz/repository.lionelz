@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.myvod" name="VOD By Date" version="0.1" provider-name="Lionel Zerbib">
+  <requires>
+    <import addon="xbmc.python" version="2.24.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>VOD By Date</summary>
+    <description>VOD By Date</description>
+    <platform>all</platform>
+  </extension>
+</addon>
