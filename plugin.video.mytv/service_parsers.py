@@ -4,10 +4,18 @@ import os
 import sys
 import unicodedata
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from xml.dom import minidom
 from xml.sax import handler
 from xml.sax import make_parser
+
+
+def get_datetime(date_string, format):
+    try:
+        datetime.strptime(date_string, format)
+    except TypeError:
+        datetime(*(time.strptime(date_string, format)[0:6]))
 
 
 def setting_parser(file_name):
@@ -159,9 +167,10 @@ CHANNELS_LIST = {
 #    u'' : u'Annatel TV4'
 }
 
+
 def get_epg_time(epg_time):
     split_epg = epg_time.split(' ')
-    dt = datetime.strptime(split_epg[0], "%Y%m%d%H%M%S")
+    dt = get_datetime(split_epg[0], "%Y%m%d%H%M%S")
     tz = int(split_epg[1][1:3]) * 60 + int(split_epg[1][3:5])
     if (split_epg[1][0] == "+"):
         return (dt - timedelta(minutes=tz))
@@ -234,7 +243,7 @@ class programs_parser(object):
         else:
             with open(ts_file, 'r') as f:
                 ld = f.read()
-                last_download = datetime.strptime(ld, '%Y-%m-%d %H:%M:%S.%f')
+                last_download = get_datetime(ld, '%Y-%m-%d %H:%M:%S.%f')
             if cur_date - timedelta(days=3) > last_download:
                 download_zip = True
         if download_zip:
