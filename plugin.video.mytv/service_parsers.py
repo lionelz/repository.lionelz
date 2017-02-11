@@ -2,6 +2,7 @@
 import urllib
 import os
 import sys
+import time
 import unicodedata
 import zipfile
 from datetime import datetime
@@ -13,9 +14,9 @@ from xml.sax import make_parser
 
 def get_datetime(date_string, format):
     try:
-        datetime.strptime(date_string, format)
+        return datetime.strptime(date_string, format)
     except TypeError:
-        datetime(*(time.strptime(date_string, format)[0:6]))
+        return datetime(*(time.strptime(date_string, format)[0:6]))
 
 
 def setting_parser(file_name):
