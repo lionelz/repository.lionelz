@@ -82,6 +82,6 @@ p_parser = service_parsers.programs_parser(
     addon_iptvsimple_path)
 p_parser.parse(os.path.join(addon_iptvsimple_path, 'epg.xml')) 
 
-xbmc.executebuiltin('StopPVRManager')
-time.sleep(5)
-xbmc.executebuiltin('StartPVRManager')
+# xbmc.executebuiltin('StopPVRManager')
+# time.sleep(5)
+# xbmc.executebuiltin('StartPVRManager')
