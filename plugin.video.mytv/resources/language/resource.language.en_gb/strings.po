@@ -3,18 +3,18 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-msgctxt "#30000"
+msgctxt "#30010"
 msgid "Login"
 msgstr ""
 
-msgctxt "#30001"
+msgctxt "#30011"
 msgid "Password"
 msgstr ""
 
-msgctxt "#32000"
+msgctxt "#32010"
 msgid "Authentication"
 msgstr ""
 
-msgctxt "#32001"
+msgctxt "#32011"
 msgid "You need to enter your login/password in the setting"
 msgstr ""

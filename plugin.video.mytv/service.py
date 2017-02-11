@@ -19,7 +19,7 @@ def get_settings(addon):
     password = addon.getSetting('password')
     log('login: %s, password: %s' % (login, password))
     while (login.strip() == '' or password.strip() == ''):
-        xbmc.executebuiltin('XBMC.Notification("32000","32001", 10000)')                
+        xbmc.executebuiltin('XBMC.Notification("32010","32011", 10000)')
         result = addon.openSettings()
         login = addon.getSetting('login')
         password = addon.getSetting('password')
@@ -47,6 +47,7 @@ addon_iptvsimple_id = 'pvr.iptvsimple'
 addon = xbmcaddon.Addon(id=addon_id)
 iptvsimple_addon = xbmcaddon.Addon(id=addon_iptvsimple_id)
 
+xbmc.executebuiltin('StopPVRManager')
 login, password = get_settings(addon)
 
 addon_iptvsimple_path = os.path.join(
@@ -81,4 +82,4 @@ p_parser = service_parsers.programs_parser(
     addon_iptvsimple_path)
 p_parser.parse(os.path.join(addon_iptvsimple_path, 'epg.xml')) 
 
-#xbmc.executebuiltin('StartPVRManager')
+xbmc.executebuiltin('StartPVRManager')

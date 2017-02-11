@@ -38,7 +38,7 @@ class channel_parser(object):
     _ATTRIBUTES = ['name', 'url', 'logo', 'program_title', 'program_hours',
         'program_subtitle', 'program_description']
 
-    def __init__(self,  login, password, log_path):
+    def __init__(self, login, password, log_path):
         self._login = login
         self._password = password
         self._log_path = log_path
@@ -60,7 +60,7 @@ class channel_parser(object):
         return self._channels
 
     def _get_logo(self, url):
-        dir_name =  os.path.join(self._log_path, 'logos')
+        dir_name = os.path.join(self._log_path, 'logos')
         name = url[url.rindex('/') + 1:len(url)]
         file_name = os.path.join(dir_name, name)
         if not os.path.exists(file_name):
@@ -113,7 +113,7 @@ CHANNELS_LIST = {
    u'C3.telerama.fr': u'France 3',
    u'C4.telerama.fr': [u'Canal +', u'Canal+ HD'],
    u'C5.telerama.fr': u'France 5',
-   u'C6.telerama.fr': u'M6',u'M6 HD'
+   u'C6.telerama.fr': [u'M6', u'M6 HD'],
    u'C7.telerama.fr': u'Arte',
    u'C8.telerama.fr': u'C8 (Ex D8)',
    u'C9.telerama.fr': u'W9',
@@ -216,7 +216,7 @@ class channel_filter(handler.ContentHandler):
 
 class programs_parser(object):
 
-    def __init__(self,  url, tmp_dir):
+    def __init__(self, url, tmp_dir):
         self._url = url
         if not os.path.exists(tmp_dir):
             os.mkdir(tmp_dir)
@@ -233,8 +233,8 @@ class programs_parser(object):
             download_zip = True
         else:
             with open(ts_file, 'r') as f:
-                last_download = datetime.strptime(
-                    f.read(), '%Y-%m-%d %H:%M:%S.%f')
+                ld = f.read()
+                last_download = datetime.strptime(ld, '%Y-%m-%d %H:%M:%S.%f')
             if cur_date - timedelta(days=3) > last_download:
                 download_zip = True
         if download_zip:
