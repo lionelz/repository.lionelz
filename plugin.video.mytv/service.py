@@ -2,6 +2,7 @@ import os
 import service_parsers
 import shutil
 import sys
+import time
 import urllib
 import urlparse
 import xbmc
@@ -47,7 +48,6 @@ addon_iptvsimple_id = 'pvr.iptvsimple'
 addon = xbmcaddon.Addon(id=addon_id)
 iptvsimple_addon = xbmcaddon.Addon(id=addon_iptvsimple_id)
 
-xbmc.executebuiltin('StopPVRManager')
 login, password = get_settings(addon)
 
 addon_iptvsimple_path = os.path.join(
@@ -82,4 +82,6 @@ p_parser = service_parsers.programs_parser(
     addon_iptvsimple_path)
 p_parser.parse(os.path.join(addon_iptvsimple_path, 'epg.xml')) 
 
+xbmc.executebuiltin('StopPVRManager')
+time.sleep(5)
 xbmc.executebuiltin('StartPVRManager')
