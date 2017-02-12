@@ -77,16 +77,6 @@ addon_iptvsimple_path = os.path.join(
 
 log(addon_iptvsimple_path)
 
-shutil.copyfile(
-    os.path.join(
-        xbmc.translatePath('special://home').decode('utf-8'),
-        'addons',
-        addon_id,
-        'xmltv.dtd'
-    ),
-    os.path.join(addon_path, 'xmltv.dtd')
-)
-
 iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path)
 
 myserver = http_server.MyServer(addon_path, login, password)

@@ -245,34 +245,37 @@ class programs_parser(object):
         if not os.path.exists(tmp_dir):
             os.mkdir(tmp_dir)
         self._tmp_dir = tmp_dir
-        self._xml_file = None
-
-    def _getzip_and_unzip(self):
-        zip_filename = os.path.join(
+        self._out = None
+        self._zip_filename = os.path.join(
             self._tmp_dir, self._url[self._url.rindex('/') + 1:len(self._url)])
+
+    def _getzip(self):
         cur_date = datetime.now()
         ts_file = os.path.join(self._tmp_dir, 'ts_zip')
         is_old = check_ts(ts_file, timedelta(days=6))
         if is_old:
-            with open(zip_filename, 'wb') as f: 
+            with open(self._zip_filename, 'wb') as f: 
                 f.write(urllib.urlopen(self._url).read())
- 
-        if zipfile.is_zipfile(zip_filename):
-            with zipfile.ZipFile(zip_filename, 'r') as z:
-                if is_old:
-                    z.extract(z.namelist()[0], self._tmp_dir)
-                self._xml_file = os.path.join(self._tmp_dir, z.namelist()[0])
-
 
     def parse_to_out(self, out):
-        self._getzip_and_unzip()
+        self._getzip()
         parser = make_parser()
+        parser.setFeature(handler.feature_namespaces,False)
+        parser.setFeature(handler.feature_validation,False)
+        parser.setFeature(handler.feature_external_ges, False)
         parser.setContentHandler(channel_filter(out=out))
-        parser.parse(self._xml_file)
+        with zipfile.ZipFile(self._zip_filename, 'r') as z:
+            with z.open(z.namelist()[0]) as fi:
+                parser.parse(fi)
 
     def parse(self, dest_file_name):
-        self._getzip_and_unzip()
+        self._getzip()
         parser = make_parser()
+        parser.setFeature(handler.feature_namespaces,False)
+        parser.setFeature(handler.feature_validation,False)
+        parser.setFeature(handler.feature_external_ges, False)
         with open(dest_file_name, 'w') as f:
             parser.setContentHandler(channel_filter(out=f))
-            parser.parse(self._xml_file)
+            with zipfile.ZipFile(self._zip_filename, 'r') as z:
+                with z.open(z.namelist()[0]) as fi:
+                    parser.parse(fi)
