@@ -184,7 +184,7 @@ class channel_filter(handler.ContentHandler):
         handler.ContentHandler.__init__(self)
         self._out = out
         self._write = True
-        self._three_days = datetime.now() + timedelta(days=3)
+        self._delta = datetime.now() + timedelta(days=2)
 
     def startDocument(self):
         self._out.write('<?xml version="1.0" encoding="utf-8"?>\n')
@@ -195,7 +195,7 @@ class channel_filter(handler.ContentHandler):
             if ((attrs.get('id') in CHANNELS_LIST or 
                     attrs.get('channel') in CHANNELS_LIST) and (
                         'start' not in attrs or 
-                        get_epg_time(attrs.get('start')) < self._three_days)):
+                        get_epg_time(attrs.get('start')) < self._delta)):
                 self._write = True
             else:
                 self._write = False
@@ -245,7 +245,7 @@ class programs_parser(object):
             with open(ts_file, 'r') as f:
                 ld = f.read()
                 last_download = get_datetime(ld, '%Y-%m-%d %H:%M:%S.%f')
-            if cur_date - timedelta(days=3) > last_download:
+            if cur_date - timedelta(days=6) > last_download:
                 download_zip = True
         if download_zip:
             with open(ts_file, 'w') as f: 
@@ -255,9 +255,16 @@ class programs_parser(object):
  
         if zipfile.is_zipfile(zip_filename):
             with zipfile.ZipFile(zip_filename, 'r') as z:
-                z.extract(z.namelist()[0], self._tmp_dir)
+                if download_zip:
+                    z.extract(z.namelist()[0], self._tmp_dir)
                 self._xml_file = os.path.join(self._tmp_dir, z.namelist()[0])
 
+
+    def parse_to_out(self, out):
+        self._getzip_and_unzip()
+        parser = make_parser()
+        parser.setContentHandler(channel_filter(out=out))
+        parser.parse(self._xml_file)
 
     def parse(self, dest_file_name):
         self._getzip_and_unzip()

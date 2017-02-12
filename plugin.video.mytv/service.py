@@ -1,3 +1,4 @@
+import http_server
 import os
 import service_parsers
 import shutil
@@ -34,12 +35,24 @@ def iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path):
         iptvsimple_addon.setSetting('epgPathType', '0')
     setgs = service_parsers.setting_parser(settings_file)
 
-    setgs['epgPathType'] = '0'
-    setgs['epgPath'] = os.path.join(addon_iptvsimple_path, 'epg.xml')
-    setgs['logoPathType'] = '0'
-    setgs['logoPath'] = os.path.join(addon_iptvsimple_path, 'logos')
-    setgs['m3uPathType'] = '0'
-    setgs['m3uPath'] = os.path.join(addon_iptvsimple_path, 'iptv.m3u')
+    setgs['epgCache'] = 'false'
+    setgs['epgPath'] = 'http://localhost:12345/epg.xml'
+    setgs['epgPathType'] = '1'
+    setgs['epgTSOverride'] = 'false'
+    setgs['epgTimeShift'] = '1.000000'
+    setgs['epgUrl'] = 'http://localhost:12345/epg.xml'
+
+    setgs['logoBaseUrl'] = 'http://localhost:12345/logos'
+    setgs['logoFromEpg'] = '0'
+    setgs['logoPath'] = 'http://localhost:12345/logos'
+    setgs['logoPathType'] = '1'
+
+    setgs['m3uCache'] = 'false'
+    setgs['m3uPath'] = 'http://localhost:12345/iptv.m3u'
+    setgs['m3uPathType'] = '1'
+    setgs['m3uUrl'] = 'http://localhost:12345/iptv.m3u'
+
+    setgs['startNum'] = '1'
 
     service_parsers.setting_writer(settings_file, setgs)
 
@@ -50,6 +63,12 @@ iptvsimple_addon = xbmcaddon.Addon(id=addon_iptvsimple_id)
 
 login, password = get_settings(addon)
 
+addon_path = os.path.join(
+    xbmc.translatePath('special://masterprofile').decode('utf-8'),
+    'addon_data',
+    addon_id,
+)
+
 addon_iptvsimple_path = os.path.join(
     xbmc.translatePath('special://masterprofile').decode('utf-8'),
     'addon_data',
@@ -58,8 +77,6 @@ addon_iptvsimple_path = os.path.join(
 
 log(addon_iptvsimple_path)
 
-iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path)
-
 shutil.copyfile(
     os.path.join(
         xbmc.translatePath('special://home').decode('utf-8'),
@@ -67,21 +84,14 @@ shutil.copyfile(
         addon_id,
         'xmltv.dtd'
     ),
-    os.path.join(addon_iptvsimple_path, 'xmltv.dtd')
+    os.path.join(addon_path, 'xmltv.dtd')
 )
 
-# Get channels
-channels = service_parsers.channel_parser(
-    login, password, addon_iptvsimple_path)
-with open(os.path.join(addon_iptvsimple_path, 'iptv.m3u'), 'w') as f: 
-    f.write(channels.to_m3u())
+iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path)
 
-# Get epg
-p_parser = service_parsers.programs_parser(
-    'http://xmltv.dtdns.net/download/complet.zip',
-    addon_iptvsimple_path)
-p_parser.parse(os.path.join(addon_iptvsimple_path, 'epg.xml')) 
+myserver = http_server.MyServer(addon_path, login, password)
+myserver.start()
 
-# xbmc.executebuiltin('StopPVRManager')
-# time.sleep(5)
-# xbmc.executebuiltin('StartPVRManager')
+xbmc.executebuiltin('StopPVRManager')
+time.sleep(5)
+xbmc.executebuiltin('StartPVRManager')
