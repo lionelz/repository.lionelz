@@ -32,9 +32,9 @@ def setting_parser(file_name):
 
 def setting_writer(file_name, settings):
     with open(file_name, 'w') as f: 
-        f.write('<settings>')
+        f.write('<settings>\n')
         for key, value in settings.iteritems():
-            f.write('<setting id="%s" value="%s" />' % (
+            f.write('   <setting id="%s" value="%s" />\n' % (
                 key, value.encode('utf-8')))
         f.write('</settings>')
 
@@ -224,6 +224,21 @@ class channel_filter(handler.ContentHandler):
             self._out.write('<?%s %s?>' % (target, data))
 
 
+def check_ts(ts_name, t_delta):
+    old = True
+    cur_date = datetime.now()
+    if os.path.exists(ts_name):
+        with open(ts_name, 'r') as f:
+            ld = f.read()
+            last_download = get_datetime(ld, '%Y-%m-%d %H:%M:%S.%f')
+        if cur_date - t_delta > last_download:
+            old = True
+    if old:
+        with open(ts_name, 'w') as f:
+            f.write(cur_date.strftime('%Y-%m-%d %H:%M:%S.%f'))
+    return old
+
+
 class programs_parser(object):
 
     def __init__(self, url, tmp_dir):
@@ -237,25 +252,15 @@ class programs_parser(object):
         zip_filename = os.path.join(
             self._tmp_dir, self._url[self._url.rindex('/') + 1:len(self._url)])
         cur_date = datetime.now()
-        ts_file = os.path.join(self._tmp_dir, 'ts')
-        download_zip = True
-        if not os.path.exists(ts_file):
-            download_zip = True
-        else:
-            with open(ts_file, 'r') as f:
-                ld = f.read()
-                last_download = get_datetime(ld, '%Y-%m-%d %H:%M:%S.%f')
-            if cur_date - timedelta(days=6) > last_download:
-                download_zip = True
-        if download_zip:
-            with open(ts_file, 'w') as f: 
-                f.write(cur_date.strftime('%Y-%m-%d %H:%M:%S.%f'))
+        ts_file = os.path.join(self._tmp_dir, 'ts_zip')
+        is_old = check_ts(ts_file, timedelta(days=6))
+        if is_old:
             with open(zip_filename, 'wb') as f: 
                 f.write(urllib.urlopen(self._url).read())
  
         if zipfile.is_zipfile(zip_filename):
             with zipfile.ZipFile(zip_filename, 'r') as z:
-                if download_zip:
+                if is_old:
                     z.extract(z.namelist()[0], self._tmp_dir)
                 self._xml_file = os.path.join(self._tmp_dir, z.namelist()[0])
 

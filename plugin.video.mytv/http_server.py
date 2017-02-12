@@ -4,6 +4,8 @@ import time
 import threading
 import os
 
+from datetime import timedelta
+
 
 class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
@@ -12,7 +14,7 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.send_response(200)
         s.send_header('Content-type', 'image/png')
         s.end_headers()
-        logo =  s.path[s.path.rindex('/') + 1:len(s.path)]
+        logo = s.path[s.path.rindex('/') + 1:len(s.path)]
         with open(os.path.join(
             MyTVHandler.myServer.work_dir, 'logos', logo), 'rb') as f: 
             s.wfile.write(f.read())
@@ -20,11 +22,19 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.send_response(200)
         s.send_header('Content-type', 'application/xml')
         s.end_headers()
-        p_parser = service_parsers.programs_parser(
-            'http://xmltv.dtdns.net/download/complet.zip',
-            MyTVHandler.myServer.work_dir
-        )
-        p_parser.parse_to_out(s.wfile) 
+        file_name = os.path.join(
+            MyTVHandler.myServer.work_dir, 'epg.xml')
+        epg_updater = UpdateEpg(MyTVHandler.myServer.work_dir, file_name)
+        ts_file = os.path.join(
+            MyTVHandler.myServer.work_dir, 'ts_epg')
+        is_old = service_parsers.check_ts(ts_file, timedelta(hours=4))
+        if os.path.exists(file_name):
+            if is_old:
+                epg_updater.start()
+        else:
+            epg_updater.run()
+        with open(file_name, 'r') as f: 
+            s.wfile.write(f.read())
         return
     if s.path == '/iptv.m3u':
         s.send_response(200)
@@ -38,11 +48,27 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.wfile.write(channels.to_m3u())
         return
 
+class UpdateEpg(threading.Thread):
+
+    def __init__(self, work_dir, file_name):
+        super(UpdateEpg, self).__init__()
+        self._work_dir = work_dir
+        self._tmp_file_name = '%s.tmp' % file_name.encode('utf-8')
+        self._file_name = file_name
+
+    def run(self):
+        p_parser = service_parsers.programs_parser(
+            'http://xmltv.dtdns.net/download/complet.zip',
+            self._work_dir
+        )
+        p_parser.parse(self._tmp_file_name)
+        os.remove(self._file_name)
+        os.rename(self._tmp_file_name, self._file_name)
 
 class MyServer(threading.Thread):
 
     def __init__(self, work_dir,
-                 login, password, host_name='localhost', port=12345):
+                 login, password, host_name='127.0.0.1', port=12345):
         super(MyServer, self).__init__()
         self.work_dir = work_dir
         self.login = login
