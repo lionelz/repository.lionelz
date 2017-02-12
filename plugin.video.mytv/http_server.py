@@ -27,14 +27,18 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         epg_updater = UpdateEpg(MyTVHandler.myServer.work_dir, file_name)
         ts_file = os.path.join(
             MyTVHandler.myServer.work_dir, 'ts_epg')
-        is_old = service_parsers.check_ts(ts_file, timedelta(hours=4))
-        if os.path.exists(file_name):
-            if is_old:
-                epg_updater.start()
-        else:
-            epg_updater.run()
-        with open(file_name, 'r') as f: 
-            s.wfile.write(f.read())
+        MyTVHandler.myServer.lock.acquire()
+        try:
+            is_old = service_parsers.check_ts(ts_file, timedelta(hours=4))
+            if os.path.exists(file_name):
+                if is_old:
+                    epg_updater.start()
+            else:
+                epg_updater.run()
+            with open(file_name, 'r') as f: 
+                s.wfile.write(f.read())
+        finally:
+            MyTVHandler.myServer.lock.release()
         return
     if s.path == '/iptv.m3u':
         s.send_response(200)
@@ -47,6 +51,7 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         )
         s.wfile.write(channels.to_m3u())
         return
+
 
 class UpdateEpg(threading.Thread):
 
@@ -62,8 +67,10 @@ class UpdateEpg(threading.Thread):
             self._work_dir
         )
         p_parser.parse(self._tmp_file_name)
-        os.remove(self._file_name)
+        if os.path.exists(self._file_name):
+            os.remove(self._file_name)
         os.rename(self._tmp_file_name, self._file_name)
+
 
 class MyServer(threading.Thread):
 
@@ -75,6 +82,7 @@ class MyServer(threading.Thread):
         self.password = password
         self.host_name = host_name
         self.port = port
+        self.lock = threading.Lock()
         MyTVHandler.myServer = self
 
     def run(self):

@@ -231,8 +231,7 @@ def check_ts(ts_name, t_delta):
         with open(ts_name, 'r') as f:
             ld = f.read()
             last_download = get_datetime(ld, '%Y-%m-%d %H:%M:%S.%f')
-        if cur_date - t_delta > last_download:
-            old = True
+        old = cur_date - t_delta > last_download
     if old:
         with open(ts_name, 'w') as f:
             f.write(cur_date.strftime('%Y-%m-%d %H:%M:%S.%f'))
