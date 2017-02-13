@@ -3,7 +3,7 @@
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
   </requires>
-  <extension point="xbmc.service" library="service.py" start="startup"/>
+  <extension point="xbmc.service" library="service.py" start="login|startup"/>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary>My TV</summary>
