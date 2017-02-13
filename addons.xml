@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mytv" name="My TV" version="1.2" provider-name="Lionel Z.">
+<addon id="plugin.video.mytv" name="My TV" version="1.3" provider-name="Lionel Z.">
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
     <import addon="pvr.iptvsimple" version="1.12.12"/>
