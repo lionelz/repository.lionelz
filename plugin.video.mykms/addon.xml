@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.mykms" name="My KMS" version="1.0" provider-name="Lionel Z.">
+  <requires>
+    <import addon="xbmc.python" version="2.24.0"/>
+  </requires>
+  <extension point="xbmc.service" library="server.py" start="login|startup"/>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>My KMS</summary>
+    <description>My KMS</description>
+    <platform>all</platform>
+  </extension>
+</addon>

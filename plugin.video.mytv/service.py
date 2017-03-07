@@ -39,7 +39,7 @@ def iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path):
     setgs['epgPath'] = 'http://127.0.0.1:12345/epg.xml'
     setgs['epgPathType'] = '1'
     setgs['epgTSOverride'] = 'false'
-    setgs['epgTimeShift'] = '1.000000'
+    setgs['epgTimeShift'] = '0.000000'
     setgs['epgUrl'] = 'http://127.0.0.1:12345/epg.xml'
 
     setgs['logoBaseUrl'] = 'http://127.0.0.1:12345/logos'
