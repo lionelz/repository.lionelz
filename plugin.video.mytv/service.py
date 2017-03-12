@@ -28,6 +28,10 @@ def get_settings(addon):
         log('login: %s, password: %s' % (login, password))
     return login, password
 
+def addon_enabled(addon_id, enabled):
+    json_enabled = ( '{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled",'
+        ' "params": { "addonid": "%s", "enabled": %s }}' % (addon_id, enabled))
+    xbmc.executeJSONRPC(json_enabled)
     
 def iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path):
     settings_file = os.path.join(addon_iptvsimple_path, 'settings.xml')
@@ -58,6 +62,7 @@ def iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path):
 
 addon_id = 'plugin.video.mytv'
 addon_iptvsimple_id = 'pvr.iptvsimple'
+addon_enabled(addon_iptvsimple_id, 'true')
 addon = xbmcaddon.Addon(id=addon_id)
 iptvsimple_addon = xbmcaddon.Addon(id=addon_iptvsimple_id)
 
@@ -77,11 +82,12 @@ addon_iptvsimple_path = os.path.join(
 
 log(addon_iptvsimple_path)
 
-iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path)
-
 myserver = http_server.MyServer(addon_path, login, password)
 myserver.start()
 
-xbmc.executebuiltin('StopPVRManager')
+iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path)
+
 time.sleep(5)
-xbmc.executebuiltin('StartPVRManager')
+
+addon_enabled(addon_iptvsimple_id, 'false')
+addon_enabled(addon_iptvsimple_id, 'true')

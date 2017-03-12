@@ -75,7 +75,7 @@ class UpdateEpg(threading.Thread):
 class MyServer(threading.Thread):
 
     def __init__(self, work_dir,
-                 login, password, host_name='127.0.0.1', port=12345):
+                 login, password, host_name='0.0.0.0', port=12345):
         super(MyServer, self).__init__()
         self.work_dir = work_dir
         self.login = login
