@@ -27,13 +27,10 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         epg_updater = UpdateEpg(MyTVHandler.myServer.work_dir, file_name)
         ts_file = os.path.join(
             MyTVHandler.myServer.work_dir, 'ts_epg')
-        MyTVHandler.myServer.lock.acquire()
         try:
+            MyTVHandler.myServer.lock.acquire()
             is_old = service_parsers.check_ts(ts_file, timedelta(hours=4))
-            if os.path.exists(file_name):
-                if is_old:
-                    epg_updater.start()
-            else:
+            if not os.path.exists(file_name) or is_old:
                 epg_updater.run()
             with open(file_name, 'r') as f: 
                 s.wfile.write(f.read())
@@ -63,7 +60,7 @@ class UpdateEpg(threading.Thread):
 
     def run(self):
         p_parser = service_parsers.programs_parser(
-            'http://xmltv.dtdns.net/download/complet.zip',
+            'https://github.com/lionelz/repository.lionelz/lionelz.zip',
             self._work_dir
         )
         p_parser.parse(self._tmp_file_name)
