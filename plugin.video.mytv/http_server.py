@@ -60,7 +60,7 @@ class UpdateEpg(threading.Thread):
 
     def run(self):
         p_parser = service_parsers.programs_parser(
-            'https://github.com/lionelz/repository.lionelz/lionelz.zip',
+            'https://github.com/lionelz/repository.lionelz/raw/master/lionelz.zip',
             self._work_dir
         )
         p_parser.parse(self._tmp_file_name)
