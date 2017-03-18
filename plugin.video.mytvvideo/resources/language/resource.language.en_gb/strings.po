@@ -1,0 +1,20 @@
+# plugin.video.mytvvideo language file
+msgid ""
+msgstr ""
+"Language: en\n"
+
+msgctxt "#30000"
+msgid "Login"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Password"
+msgstr ""
+
+msgctxt "#32000"
+msgid "Authentication"
+msgstr ""
+
+msgctxt "#32001"
+msgid "You need to enter your login/password in the setting"
+msgstr ""

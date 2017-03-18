@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mytv" name="My TV" version="1.3" provider-name="Lionel Z.">
+<addon id="plugin.video.mytv" name="My TV" version="1.4" provider-name="Lionel Z.">
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
   </requires>
@@ -35,6 +35,20 @@
     <platform>all</platform>
     <summary>My KMS</summary>
     <description>My KMS</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+<addon id="plugin.video.mytvvideo" name="TV" version="1.0" provider-name="Lionel Z.">
+  <requires>
+    <import addon="xbmc.python" version="2.24.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>TV</summary>
+    <description>TV</description>
     <platform>all</platform>
   </extension>
 </addon>
