@@ -5,6 +5,15 @@ import threading
 import os
 
 from datetime import timedelta
+import _strptime
+
+
+def start_download_epg():
+    file_name = os.path.join(
+        MyTVHandler.myServer.work_dir, 'epg.xml')
+    epg_updater = UpdateEpg(MyTVHandler.myServer.work_dir, file_name)
+    epg_updater.start()
+    return file_name
 
 
 class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -18,24 +27,17 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         with open(os.path.join(
             MyTVHandler.myServer.work_dir, 'logos', logo), 'rb') as f: 
             s.wfile.write(f.read())
+        return
     if s.path == '/epg.xml':
         s.send_response(200)
         s.send_header('Content-type', 'application/xml')
         s.end_headers()
-        file_name = os.path.join(
-            MyTVHandler.myServer.work_dir, 'epg.xml')
-        epg_updater = UpdateEpg(MyTVHandler.myServer.work_dir, file_name)
-        ts_file = os.path.join(
-            MyTVHandler.myServer.work_dir, 'ts_epg')
-        try:
-            MyTVHandler.myServer.lock.acquire()
-            is_old = service_parsers.check_ts(ts_file, timedelta(hours=4))
-            if not os.path.exists(file_name) or is_old:
-                epg_updater.run()
+        file_name = start_download_epg()
+        if os.path.exists(file_name):
             with open(file_name, 'r') as f: 
                 s.wfile.write(f.read())
-        finally:
-            MyTVHandler.myServer.lock.release()
+        else:
+                s.wfile.write('<?xml version="1.0" encoding="utf-8"?>\n<tv></tv>')
         return
     if s.path == '/iptv.m3u':
         s.send_response(200)
@@ -49,6 +51,11 @@ class MyTVHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.wfile.write(channels.to_m3u())
         return
 
+  def do_HEAD(s):
+    if s.path.startswith('/logos'):
+        s.send_response(304)
+        s.end_headers()
+
 
 class UpdateEpg(threading.Thread):
 
@@ -59,15 +66,23 @@ class UpdateEpg(threading.Thread):
         self._file_name = file_name
 
     def run(self):
-        p_parser = service_parsers.programs_parser(
-            'https://github.com/lionelz/repository.lionelz/raw/master/lionelz.zip',
-#             'http://xmltv.dtdns.net/alacarte/ddl?fichier=/xmltv_site/xmlPerso/lionelz.zip',
-            self._work_dir
-        )
-        p_parser.parse(self._tmp_file_name)
-        if os.path.exists(self._file_name):
-            os.remove(self._file_name)
-        os.rename(self._tmp_file_name, self._file_name)
+        try:
+            MyTVHandler.myServer.lock.acquire()
+            ts_file = os.path.join(
+                MyTVHandler.myServer.work_dir, 'ts_epg')
+            is_old = service_parsers.check_ts(ts_file, timedelta(hours=4))
+            if not os.path.exists(self._file_name) or is_old:
+                p_parser = service_parsers.programs_parser(
+                    'http://www.xmltv.fr/guide/tvguide.zip',
+#                    'https://github.com/lionelz/repository.lionelz/raw/master/lionelz.zip',
+                    self._work_dir
+                )
+                p_parser.parse(self._tmp_file_name)
+                if os.path.exists(self._file_name):
+                    os.remove(self._file_name)
+                os.rename(self._tmp_file_name, self._file_name)
+        finally:
+            MyTVHandler.myServer.lock.release()
 
 
 class MyServer(threading.Thread):
@@ -82,6 +97,7 @@ class MyServer(threading.Thread):
         self.port = port
         self.lock = threading.Lock()
         MyTVHandler.myServer = self
+        start_download_epg()
 
     def run(self):
         httpd = BaseHTTPServer.HTTPServer(

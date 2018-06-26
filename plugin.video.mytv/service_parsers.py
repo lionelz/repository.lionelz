@@ -1,5 +1,6 @@
 
 import urllib
+import urllib2
 import os
 import sys
 import time
@@ -8,8 +9,8 @@ import zipfile
 from datetime import datetime
 from datetime import timedelta
 from xml.dom import minidom
-from xml.sax import handler
-from xml.sax import make_parser
+from xml.sax import handler, make_parser, saxutils
+import _strptime
 
 
 def get_datetime(date_string, format):
@@ -31,11 +32,13 @@ def setting_parser(file_name):
 
 
 def setting_writer(file_name, settings):
-    with open(file_name, 'w') as f: 
-        f.write('<settings>\n')
+    with open(file_name, 'w+') as f: 
+        f.write('<settings>')
+        f.write(os.linesep)
         for key, value in settings.iteritems():
-            f.write('   <setting id="%s" value="%s" />\n' % (
+            f.write('   <setting id="%s" value="%s" />' % (
                 key, value.encode('utf-8')))
+            f.write(os.linesep)
         f.write('</settings>')
 
 
@@ -117,55 +120,64 @@ def get_channel_id(name):
 
 
 CHANNELS_LIST = {
-   u'1': [u'TF1', u'TF1 HD'],
-   u'2': [u'France 2', u'France 2 HD'],
-   u'3': u'France 3',
-   u'4': [u'Canal +', u'Canal+ HD'],
-   u'5': u'France 5',
-   u'6': [u'M6', u'M6 HD'],
-   u'7': u'Arte',
-   u'8': u'C8 (Ex D8)',
-   u'9': u'W9',
-   u'10': u'TMC',
-   u'11': u'NT1',
-   u'12': u'NRJ 12',
-   u'15': u'BFM TV',
-   u'16': u'i-t\xe9l\xe9',
-   u'17': u'Cstar (Ex D17)',
-   u'252': u'Equipe 21',
+   u'C192.api.telerama.fr': [u'TF1', u'TF1 HD'],
+   u'C4.api.telerama.fr': [u'France 2', u'France 2 HD'],
+   u'C80.api.telerama.fr': u'France 3',
+   u'C34.api.telerama.fr': [u'Canal +', u'Canal+ HD'],
+   u'C47.api.telerama.fr': u'France 5',
+   u'C118.api.telerama.fr': [u'M6', u'M6 HD'],
+   u'C111.api.telerama.fr': u'Arte',
+   u'C445.api.telerama.fr': u'C8',
+   u'C119.api.telerama.fr': u'W9',
+   u'C195.api.telerama.fr': u'TMC',
+   u'C446.api.telerama.fr': [u'NT1', u'TFX'],
+   u'C444.api.telerama.fr': u'NRJ 12',
+#   u'':u'Annatel+',
+   u'C481.api.telerama.fr': u'BFM TV',
+   u'C226.api.telerama.fr': u'CNews',
+   u'C458.api.telerama.fr': u'CStar',
+#   u'': u'Equipe 21',
 #    u'' : u'i24news',
-   u'4135': u'RMC D\xe9couverte',
-   u'4139': [u'BeIN Sport 1',
-                          u'BeIN Sport 1 HD',
-                          u'BeIN Sport 1 HD (Secours)'],
-   u'4140': [u'BeIN Sport 2',
-                          u'BeIN Sport 2 HD',
-                          u'BeIN Sport 2 HD (Secours)'],
-#    u'' : u'BeIN Sport 3 HD',
-   u'43': u'Canal+ Cin\xe9ma',
-   u'47': [u'Canal+ Sport', u'Canal+ Sport HD'],
-   u'4138': u'Canal+ S\xe9ries',
-   u'45': u'Canal+ Family',
-   u'62': u'Cine+ Premier',
-   u'186': u'Paris Premi\xe8re',
-   u'227': u'T\xe9va',
-   u'199': u'RTL9',
-   u'68': u'Comedie+',
-   u'87': u'EuroNews',
-   u'83': u'Equidia',
-   u'124': u'InfoSport',
-   u'73': u'Disney Channel',
-   u'194': u'Disney Junior',
-   u'75': u'Disney Cinema',
-   u'171': u'NickJr France',
-   u'188': u'Planete+',
-#    u'' : u'Arutz 1',
-#    u'' : u'Arutz 2',
-#    u'' : u'Arutz 10',
-#    u'' : u'Annatel TV1',
-#    u'' : u'Annatel TV2',
-#    u'' : u'Annatel TV3',
-#    u'' : u'Annatel TV4'
+   u'C1400.api.telerama.fr': u'RMC D\xe9couverte',
+#   u'': [u'BeIN Sport 1',
+#         u'BeIN Sport 1 HD',
+#         u'BeIN Sport 1 HD (Secours)'],
+#   u'': [u'BeIN Sport 2',
+#         u'BeIN Sport 2 HD',
+#         u'BeIN Sport 2 HD (Secours)'],
+#   u'': u'BeIN Sport 3 HD',
+#   u'': u'SFR Sport 1',
+#   u'': u'SFR Sport 2',
+#   u'': u'SFR Sport 3',
+#   u'': u'Canal+ Cin\xe9ma',
+#   u'': [u'Canal+ Sport', u'Canal+ Sport HD'],
+#   u'': u'Canal+ S\xe9ries',
+#   u'': u'Canal+ Family',
+#   u'': u'Cine+ Premier',
+#   u'': u'Cine+ Frisson',
+#   u'': u'Cine+ Famiz',
+   u'C145.api.telerama.fr': u'Paris Premi\xe8re',
+#   u'': u'T\xe9va',
+#   u'': u'RTL9',
+#   u'': u'Comedie+',
+#   u'': u'EuroNews',
+#   u'': u'Equidia',
+#   u'': u'InfoSport',
+#   u'': u'Disney Channel',
+#   u'': u'Disney Junior',
+#   u'': u'Disney Cinema',
+#   u'': u'NickJr France',
+#   u'': u'Planete+',
+#   u'': u'Israel Torah',
+#   u'' : u'Arutz 1',
+#   u'' : u'Arutz 10',
+#   u'' : u'Arutz 12 (Keshet)',
+#   u'' : u'Arutz 13 (Reshet)',
+#   u'' : u'Arutz 20',
+#   u'' : u'Annatel TV1',
+#   u'' : u'Annatel TV2',
+#   u'' : u'Annatel TV3',
+#   u'' : u'Canal Decale'
 }
 
 
@@ -213,7 +225,7 @@ class channel_filter(handler.ContentHandler):
 
     def characters(self, content):
         if self._write:
-            self._out.write(content.encode('utf-8'))
+            self._out.write(saxutils.escape(content.encode('utf-8')))
 
     def ignorableWhitespace(self, content):
         if self._write:
@@ -255,7 +267,12 @@ class programs_parser(object):
         is_old = check_ts(ts_file, timedelta(days=6))
         if is_old:
             with open(self._zip_filename, 'wb') as f: 
-                f.write(urllib.urlopen(self._url).read())
+                z = urllib2.urlopen(self._url)
+                while True:
+                    chunk = z.read(80)
+                    if not chunk:
+                        break
+                    f.write(chunk)
 
     def parse_to_out(self, out):
         self._getzip()

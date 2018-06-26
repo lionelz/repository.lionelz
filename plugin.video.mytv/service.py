@@ -5,7 +5,6 @@ import shutil
 import sys
 import time
 import urllib
-import urlparse
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -19,9 +18,11 @@ def log(message):
 def get_settings(addon):
     login = addon.getSetting('login')
     password = addon.getSetting('password')
+    language = addon.getLocalizedString
     log('login: %s, password: %s' % (login, password))
     while (login.strip() == '' or password.strip() == ''):
-        xbmc.executebuiltin('XBMC.Notification("32010","32011", 10000)')
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s", 10000)' %
+            (language(32010), language(32011)))
         result = addon.openSettings()
         login = addon.getSetting('login')
         password = addon.getSetting('password')
@@ -33,38 +34,38 @@ def addon_enabled(addon_id, enabled):
         ' "params": { "addonid": "%s", "enabled": %s }}' % (addon_id, enabled))
     xbmc.executeJSONRPC(json_enabled)
     
-def iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path):
+def iptvsimple_settings(addon_iptvsimple_path):
     settings_file = os.path.join(addon_iptvsimple_path, 'settings.xml')
-    if (not os.path.isfile(settings_file)):
-        iptvsimple_addon.setSetting('epgPathType', '0')
-    setgs = service_parsers.setting_parser(settings_file)
+    if os.path.exists(settings_file):
+        setgs = service_parsers.setting_parser(settings_file)
+    else:
+        if not os.path.exists(addon_iptvsimple_path):
+            os.makedirs(addon_iptvsimple_path)
+        setgs = {}
 
     setgs['epgCache'] = 'false'
-    setgs['epgPath'] = 'http://127.0.0.1:12345/epg.xml'
-    setgs['epgPathType'] = '1'
     setgs['epgTSOverride'] = 'false'
-    setgs['epgTimeShift'] = '0.000000'
+    setgs['epgTimeShift'] = '0.0000'
+    setgs['epgPathType'] = '1'
     setgs['epgUrl'] = 'http://127.0.0.1:12345/epg.xml'
+    setgs['epgPath'] = 'http://127.0.0.1:12345/epg.xml'
 
-    setgs['logoBaseUrl'] = 'http://127.0.0.1:12345/logos'
     setgs['logoFromEpg'] = '0'
-    setgs['logoPath'] = 'http://127.0.0.1:12345/logos'
     setgs['logoPathType'] = '1'
+    setgs['logoBaseUrl'] = 'http://127.0.0.1:12345/logos'
+    setgs['logoPath'] = 'http://127.0.0.1:12345/logos'
 
     setgs['m3uCache'] = 'false'
-    setgs['m3uPath'] = 'http://127.0.0.1:12345/iptv.m3u'
     setgs['m3uPathType'] = '1'
     setgs['m3uUrl'] = 'http://127.0.0.1:12345/iptv.m3u'
+    setgs['m3uPath'] = 'http://127.0.0.1:12345/iptv.m3u'
 
     setgs['startNum'] = '1'
-
     service_parsers.setting_writer(settings_file, setgs)
 
 addon_id = 'plugin.video.mytv'
 addon_iptvsimple_id = 'pvr.iptvsimple'
-addon_enabled(addon_iptvsimple_id, 'true')
 addon = xbmcaddon.Addon(id=addon_id)
-iptvsimple_addon = xbmcaddon.Addon(id=addon_iptvsimple_id)
 
 login, password = get_settings(addon)
 
@@ -82,12 +83,23 @@ addon_iptvsimple_path = os.path.join(
 
 log(addon_iptvsimple_path)
 
+#xbmc.executebuiltin('StopPVRManager')
+addon_enabled(addon_iptvsimple_id, 'false')
+
 myserver = http_server.MyServer(addon_path, login, password)
 myserver.start()
 
-iptvsimple_settings(iptvsimple_addon, addon_iptvsimple_path)
+while True:
+    try:
+        chans = urllib.urlopen('http://127.0.0.1:12345/iptv.m3u').read()
+        log('server http started %s.' % chans)
+        break
+    except:
+        log('waiting for server http started.')
+        time.sleep(1)
 
-time.sleep(5)
+iptvsimple_settings(addon_iptvsimple_path)
 
-addon_enabled(addon_iptvsimple_id, 'false')
+time.sleep(2)
+#xbmc.executebuiltin('StartPVRManager')
 addon_enabled(addon_iptvsimple_id, 'true')
