@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mytv" name="My TV" version="1.4" provider-name="Lionel Z.">
+<addon id="plugin.video.mytv" name="My TV" version="1.5" provider-name="Lionel Z.">
   <requires>
     <import addon="xbmc.python" version="2.24.0"/>
   </requires>

@@ -16,5 +16,5 @@ msgid "Authentication"
 msgstr ""
 
 msgctxt "#32011"
-msgid "You need to enter your login/password in the setting"
+msgid "You need to enter your login/password in the settings"
 msgstr ""
